@@ -12,6 +12,7 @@ from main import app, paddle_image as image, PaddleOCRService
 # MODELS
 # ============================================================================
 
+
 class ImageRequest(BaseModel):
     image_base64: str
     prompt: str = "ocr"
@@ -23,6 +24,7 @@ class ImageRequest(BaseModel):
 # ============================================================================
 # FASTAPI WEB ENDPOINT
 # ============================================================================
+
 
 @app.function(
     image=image,
@@ -88,9 +90,9 @@ def fastapi_app():
         """Single image OCR prediction via Base64"""
         if not request.image_base64:
             raise HTTPException(status_code=400, detail="Empty image_base64")
-        
+
         start_time = time.time()
-        
+
         # Use asyncio.to_thread to unblock the event loop while waiting for Modal
         # This allows multiple requests to be processed in parallel across Modal containers
         result = await asyncio.to_thread(

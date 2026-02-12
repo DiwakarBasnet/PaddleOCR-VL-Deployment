@@ -58,7 +58,7 @@ def _init_ocr():
             paddle.base.libpaddle.DataType.BOOL = actual_bool_type
         except:
             pass
-            
+
     except Exception as e:
         print(f"INIT ERROR: Failed to deep sync paddle.bool: {e}")
 
@@ -122,7 +122,8 @@ app = modal.App(APP_NAME)
 
 # User-requested image definition
 paddle_image = (
-    modal.Image.from_registry("paddlepaddle/paddle:3.3.0-gpu-cuda11.8-cudnn8.9")
+    modal.Image.from_registry(
+        "paddlepaddle/paddle:3.3.0-gpu-cuda11.8-cudnn8.9")
     .apt_install("libgl1", "libglib2.0-0", "git-lfs")
     .pip_install("paddleocr[doc-parser]", "fastapi[standard]", "pydantic-settings", "httpx", "numpy", "orjson")
     .env({
@@ -205,7 +206,8 @@ class PaddleOCRService:
         # Initialize the model directly in the main process
         # This allows Modal to capture the model state in memory for the GPU snapshot.
         self.ocr = _init_ocr()
-        print(f"Model initialization complete. Success: {self.ocr is not None}")
+        print(
+            f"Model initialization complete. Success: {self.ocr is not None}")
 
         # Force disable PIR before importing paddle
         os.environ["FLAGS_enable_pir_api"] = "0"
@@ -225,13 +227,15 @@ class PaddleOCRService:
             paddle.tensor.bool = actual_bool_type
             paddle.tensor.manipulation.bool = actual_bool_type
 
-            print(f"Synchronized paddle.bool across modules: {actual_bool_type}")
+            print(
+                f"Synchronized paddle.bool across modules: {actual_bool_type}")
         except Exception as e:
             print(f"WARN: Failed to sync paddle.bool: {e}")
 
         # Monkey-patch masked_scatter for extra safety
         try:
             _orig_masked_scatter = paddle.Tensor.masked_scatter
+
             def patched_masked_scatter(self, mask, value):
                 if hasattr(mask, "dtype") and mask.dtype != paddle.bool:
                     try:
@@ -255,7 +259,8 @@ class PaddleOCRService:
             pass
 
         try:
-            print(f"Paddle (Main Process) device: {paddle.device.get_device()}")
+            print(
+                f"Paddle (Main Process) device: {paddle.device.get_device()}")
         except Exception as e:
             print(f"Warning checking device: {e}")
 

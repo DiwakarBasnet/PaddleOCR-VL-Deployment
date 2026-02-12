@@ -10,8 +10,10 @@ import time
 # The API endpoint provided by the user
 API_URL = "https://diwakarbasnet--paddleocr-vl-fastapi-app.modal.run/predict"
 
+
 def main():
-    parser = argparse.ArgumentParser(description="Run PaddleOCR-VL inference via HTTP API.")
+    parser = argparse.ArgumentParser(
+        description="Run PaddleOCR-VL inference via HTTP API.")
     parser.add_argument("image_path", help="Path to the image file")
     args = parser.parse_args()
 
@@ -40,22 +42,22 @@ def main():
     }
 
     print(f"Sending request to {API_URL}...")
-    
+
     try:
         json_data = json.dumps(payload).encode('utf-8')
         req = urllib.request.Request(
-            API_URL, 
-            data=json_data, 
+            API_URL,
+            data=json_data,
             headers={'Content-Type': 'application/json'}
         )
-        
+
         start_time = time.time()
         with urllib.request.urlopen(req) as response:
             resp_body = response.read()
             latency = (time.time() - start_time) * 1000
-            
+
             result = json.loads(resp_body)
-            
+
             if result.get("success"):
                 print(f"Success! (Latency: {latency:.2f}ms)")
                 print("\n" + "="*40)
@@ -80,6 +82,7 @@ def main():
     except Exception as e:
         print(f"Unexpected error: {e}")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

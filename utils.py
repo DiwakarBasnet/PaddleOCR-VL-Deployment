@@ -5,6 +5,7 @@ import numpy as np
 import pathlib
 from typing import Dict, Any
 
+
 def decode_image(image_data: Any):
     """Robustly decode image data (base64 str or bytes) into OpenCV format."""
     try:
@@ -89,7 +90,7 @@ def generate_markdown(raw_result: Dict[str, Any]) -> str:
     for item in p_list:
         item_data = (item if isinstance(item, dict)
                      else (vars(item) if hasattr(item, '__dict__') else {}))
-        content = (item_data.get('content') or 
+        content = (item_data.get('content') or
                    item_data.get('block_content', ""))
         if content:
             content = clean_text(content)
@@ -102,7 +103,7 @@ def generate_markdown(raw_result: Dict[str, Any]) -> str:
                 md_lines.append(clean_text(content, strip_html=False))
             else:
                 md_lines.append(clean_text(content, strip_html=True))
-            md_lines.append("") 
+            md_lines.append("")
     return "\n".join(md_lines)
 
 
