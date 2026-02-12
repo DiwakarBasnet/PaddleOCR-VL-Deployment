@@ -24,9 +24,16 @@ modal deploy api.py       # Deploy to Modal cloud
 ```bash
 # Load test against deployed API
 python test_api.py --url https://diwakarbasnet--paddleocr-vl-fastapi-app.modal.run/predict --requests 10 --concurrency 5 --image-dir test_images
+```
 
+```bash
 # Single image inference
 python single_image_client.py test_images/test-9.jpg
+```
+
+```bash
+# Test PDF with tables
+python pdf_test_client.py test_pdf/test_pdf.pdf -o output/test_pdf_result.md -p table
 ```
 
 ### MCP Server

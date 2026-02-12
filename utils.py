@@ -1,6 +1,7 @@
 import re
 import cv2
 import base64
+import html
 import numpy as np
 import pathlib
 from typing import Dict, Any
@@ -50,16 +51,66 @@ def decode_image(image_data: Any):
         raise ValueError(f"Decoding error: {str(e)}")
 
 
+def format_html_table_to_markdown(html_content: str) -> str:
+    """Semi-robustly convert HTML table structure to Markdown table."""
+    # Clean up newlines and spaces within the HTML
+    table_text = re.sub(r'>\s+<', '><', html_content)
+    table_text = table_text.replace('\n', ' ')
+
+    # Extract rows
+    rows = re.findall(r'<tr.*?>(.*?)</tr>', table_text, re.IGNORECASE)
+    if not rows:
+        return html_content  # Fallback
+
+    md_rows = []
+    for i, row in enumerate(rows):
+        # Extract cells (td or th)
+        cells = re.findall(r'<t[dh].*?>(.*?)</t[dh]>', row, re.IGNORECASE)
+        # Clean cell content (strip any nested tags)
+        cells = [re.sub(r'<[^>]+>', '', c).strip() for c in cells]
+        if not cells:
+            continue
+        md_rows.append("| " + " | ".join(cells) + " |")
+
+        # Add header separator after the first row
+        if i == 0:
+            md_rows.append("| " + " | ".join(['---'] * len(cells)) + " |")
+
+    return "\n" + "\n".join(md_rows) + "\n"
+
+
 def clean_text(text: str, strip_html: bool = True) -> str:
-    """Clean up internal PaddleOCR tags."""
+    """Clean up internal PaddleOCR tags and handle HTML entities."""
     if not text:
         return ""
 
+    # Unescape HTML entities first (handles &#x27; etc)
+    text = html.unescape(text)
+
+    # Handle special PaddleOCR tags
     text = text.replace("<fcel>", " | ")
     text = text.replace("<nl>", "\n")
     text = text.replace("<frow>", "\n")
 
+    # If it contains an HTML table, try to convert it to markdown
+    if "<table>" in text.lower() and "</table>" in text.lower():
+        try:
+            # Identify table segments and convert them
+            parts = re.split(r'(<table.*?>.*?</table>)', text,
+                             flags=re.IGNORECASE | re.DOTALL)
+            new_parts = []
+            for part in parts:
+                if part.lower().startswith("<table"):
+                    new_parts.append(format_html_table_to_markdown(part))
+                else:
+                    new_parts.append(part)
+            text = "".join(new_parts)
+        except Exception:
+            # Fallback to original text if conversion fails
+            pass
+
     if strip_html:
+        # Strip remaining tags
         text = re.sub(r'<[^>]+>', '', text)
 
     return text.strip()

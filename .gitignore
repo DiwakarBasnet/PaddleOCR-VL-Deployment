@@ -12,4 +12,5 @@ wheels/
 # Test Images and results
 test_images
 api_test_results.md
-output.md
+output
+test_pdf
